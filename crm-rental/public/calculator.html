@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор аренды - Строительная техника</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .equipment-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .equipment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .equipment-item:hover {
+            background: #f5f5f5;
+            border-color: #667eea;
+        }
+        
+        .equipment-item.selected {
+            background: #e8eaff;
+            border-color: #667eea;
+        }
+        
+        .equipment-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .equipment-info p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .price-tag {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .result-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #667eea;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid #667eea;
+        }
+        
+        .discount-badge {
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .suggestion-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .suggestion-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .suggestion-option {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ffeeba;
+        }
+        
+        .suggestion-option.best {
+            background: #d4edda;
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Калькулятор аренды спецтехники</h1>
+            <p>Краны, вышки, бытовки - расчет стоимости онлайн</p>
+        </div>
+        
+        <div class="calculator-grid">
+            <!-- Left Panel - Equipment Selection -->
+            <div class="card">
+                <h2>📋 Выбор оборудования</h2>
+                
+                <div class="form-group">
+                    <label for="categoryFilter">Категория</label>
+                    <select id="categoryFilter" onchange="filterEquipment()">
+                        <option value="all">Все категории</option>
+                        <option value="1">Краны</option>
+                        <option value="2">Вышки</option>
+                        <option value="3">Бытовки</option>
+                        <option value="4">Спецтехника</option>
+                    </select>
+                </div>
+                
+                <div class="equipment-list" id="equipmentList">
+                    <!-- Equipment items will be loaded here -->
+                </div>
+                
+                <div class="form-group">
+                    <label>Дополнительные услуги</label>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="serviceDelivery" onchange="calculateTotal()">
+                        <label for="serviceDelivery">Доставка техники (5 000 ₽)</label>
+                    </div>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="serviceAssembly" onchange="calculateTotal()">
+                        <label for="serviceAssembly">Монтаж/Демонтаж (3 000 ₽)</label>
+                    </div>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="serviceOperator" onchange="calculateTotal()">
+                        <label for="serviceOperator">Работа оператора (5 000 ₽/день)</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Calculation -->
+            <div class="card">
+                <h2>🧮 Расчет стоимости</h2>
+                
+                <div class="form-group">
+                    <label for="rentalPeriod">Период аренды</label>
+                    <input type="number" id="rentalPeriod" value="1" min="1" onchange="calculateTotal()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="periodUnit">Единица измерения</label>
+                    <select id="periodUnit" onchange="calculateTotal()">
+                        <option value="day">Дни</option>
+                        <option value="week">Недели</option>
+                        <option value="month">Месяцы</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="discount">Скидка (%)</label>
+                    <input type="number" id="discount" value="0" min="0" max="50" onchange="calculateTotal()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="distance">Расстояние до объекта (км)</label>
+                    <input type="number" id="distance" value="0" min="0" onchange="calculateTotal()">
+                </div>
+                
+                <button class="btn" onclick="suggestOptimalPeriod()">💡 Подобрать выгодный период</button>
+                
+                <div id="suggestionBox" class="suggestion-box hidden"></div>
+                
+                <div class="result-box">
+                    <div class="result-row">
+                        <span>Стоимость оборудования:</span>
+                        <span id="equipmentSubtotal">0 ₽</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Доп. услуги:</span>
+                        <span id="servicesSubtotal">0 ₽</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Подытог:</span>
+                        <span id="subtotal">0 ₽</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Скидка:</span>
+                        <span id="discountAmount">0 ₽</span>
+                    </div>
+                    <div class="result-row">
+                        <span>ИТОГО:</span>
+                        <span id="totalAmount">0 ₽</span>
+                    </div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="generateQuote()">📄 Сформировать КП</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Equipment data (in real app, this would come from API)
+        const equipmentData = [
+            {id: 1, categoryId: 1, name: 'Кран авто 25т', price: 15000, specs: 'Грузоподъемность: 25т, Стрела: 30м'},
+            {id: 2, categoryId: 1, name: 'Кран авто 50т', price: 25000, specs: 'Грузоподъемность: 50т, Стрела: 45м'},
+            {id: 3, categoryId: 2, name: 'Вышка 18м', price: 8000, specs: 'Высота: 18м, Тип: автовышка'},
+            {id: 4, categoryId: 2, name: 'Вышка 22м', price: 10000, specs: 'Высота: 22м, Тип: автовышка'},
+            {id: 5, categoryId: 3, name: 'Бытовка строительная', price: 500, specs: 'Размер: 6x2.3м, Тип: стандарт'},
+            {id: 6, categoryId: 3, name: 'Бытовка офисная', price: 700, specs: 'Размер: 6x2.3м, Тип: офис'},
+            {id: 7, categoryId: 4, name: 'Экскаватор', price: 12000, specs: 'Вес: 20т, Ковш: 0.8м³'}
+        ];
+        
+        let selectedEquipment = [];
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderEquipmentList(equipmentData);
+        });
+        
+        function renderEquipmentList(equipment) {
+            const container = document.getElementById('equipmentList');
+            container.innerHTML = '';
+            
+            equipment.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'equipment-item';
+                div.dataset.id = item.id;
+                div.onclick = () => toggleEquipment(item.id);
+                
+                div.innerHTML = `
+                    <div class="equipment-info">
+                        <h4>${item.name}</h4>
+                        <p>${item.specs}</p>
+                    </div>
+                    <div class="price-tag">${item.price.toLocaleString()} ₽/день</div>
+                `;
+                
+                container.appendChild(div);
+            });
+        }
+        
+        function filterEquipment() {
+            const category = document.getElementById('categoryFilter').value;
+            if (category === 'all') {
+                renderEquipmentList(equipmentData);
+            } else {
+                const filtered = equipmentData.filter(e => e.categoryId == category);
+                renderEquipmentList(filtered);
+            }
+        }
+        
+        function toggleEquipment(id) {
+            const index = selectedEquipment.indexOf(id);
+            const element = document.querySelector(`[data-id="${id}"]`);
+            
+            if (index > -1) {
+                selectedEquipment.splice(index, 1);
+                element.classList.remove('selected');
+            } else {
+                selectedEquipment.push(id);
+                element.classList.add('selected');
+            }
+            
+            calculateTotal();
+        }
+        
+        function calculateTotal() {
+            const period = parseInt(document.getElementById('rentalPeriod').value) || 1;
+            const unit = document.getElementById('periodUnit').value;
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const distance = parseFloat(document.getElementById('distance').value) || 0;
+            
+            // Calculate days
+            let days = period;
+            if (unit === 'week') days = period * 7;
+            if (unit === 'month') days = period * 30;
+            
+            // Equipment cost
+            let equipmentSubtotal = 0;
+            selectedEquipment.forEach(id => {
+                const item = equipmentData.find(e => e.id === id);
+                if (item) {
+                    equipmentSubtotal += item.price * days;
+                }
+            });
+            
+            // Period discount
+            let periodDiscount = 0;
+            if (days >= 90) periodDiscount = 20;
+            else if (days >= 30) periodDiscount = 15;
+            else if (days >= 14) periodDiscount = 10;
+            else if (days >= 7) periodDiscount = 5;
+            
+            // Additional services
+            let servicesSubtotal = 0;
+            if (document.getElementById('serviceDelivery').checked) servicesSubtotal += 5000;
+            if (document.getElementById('serviceAssembly').checked) servicesSubtotal += 3000;
+            if (document.getElementById('serviceOperator').checked) servicesSubtotal += 5000 * days;
+            
+            // Delivery cost based on distance
+            if (distance > 0 && document.getElementById('serviceDelivery').checked) {
+                servicesSubtotal += distance * 50;
+            }
+            
+            // Total discount
+            const totalDiscountPercent = Math.min(discount + periodDiscount, 50);
+            const subtotal = equipmentSubtotal + servicesSubtotal;
+            const discountAmount = subtotal * (totalDiscountPercent / 100);
+            const total = subtotal - discountAmount;
+            
+            // Update UI
+            document.getElementById('equipmentSubtotal').textContent = equipmentSubtotal.toLocaleString() + ' ₽';
+            document.getElementById('servicesSubtotal').textContent = servicesSubtotal.toLocaleString() + ' ₽';
+            document.getElementById('subtotal').textContent = subtotal.toLocaleString() + ' ₽';
+            
+            let discountText = discountAmount.toLocaleString() + ' ₽';
+            if (periodDiscount > 0) {
+                discountText += ` <span class="discount-badge">-${periodDiscount}% период</span>`;
+            }
+            document.getElementById('discountAmount').innerHTML = discountText;
+            document.getElementById('totalAmount').textContent = total.toLocaleString() + ' ₽';
+        }
+        
+        function suggestOptimalPeriod() {
+            if (selectedEquipment.length === 0) {
+                alert('Выберите оборудование');
+                return;
+            }
+            
+            const item = equipmentData.find(e => e.id === selectedEquipment[0]);
+            const currentPeriod = parseInt(document.getElementById('rentalPeriod').value) || 1;
+            const unit = document.getElementById('periodUnit').value;
+            
+            let days = currentPeriod;
+            if (unit === 'week') days = currentPeriod * 7;
+            if (unit === 'month') days = currentPeriod * 30;
+            
+            const basePrice = item.price;
+            const dailyRate = basePrice * days;
+            const weeklyRate = Math.ceil(days / 7) * (basePrice * 7 * 0.95);
+            const monthlyRate = Math.ceil(days / 30) * (basePrice * 30 * 0.85);
+            
+            const options = [
+                {type: 'Ежедневно', value: dailyRate},
+                {type: 'Еженедельно', value: weeklyRate},
+                {type: 'Ежемесячно', value: monthlyRate}
+            ];
+            
+            const minPrice = Math.min(...options.map(o => o.value));
+            const bestOption = options.find(o => o.value === minPrice);
+            
+            const box = document.getElementById('suggestionBox');
+            box.classList.remove('hidden');
+            box.innerHTML = `
+                <h4>💡 Оптимальный вариант:</h4>
+                <div class="suggestion-option">
+                    <span>Ежедневно:</span>
+                    <strong>${dailyRate.toLocaleString()} ₽</strong>
+                </div>
+                <div class="suggestion-option">
+                    <span>Еженедельно (-5%):</span>
+                    <strong>${weeklyRate.toLocaleString()} ₽</strong>
+                </div>
+                <div class="suggestion-option">
+                    <span>Ежемесячно (-15%):</span>
+                    <strong>${monthlyRate.toLocaleString()} ₽</strong>
+                </div>
+                <div class="suggestion-option best">
+                    <span>✅ Лучший вариант: ${bestOption.type}</span>
+                    <strong>Экономия: ${(dailyRate - minPrice).toLocaleString()} ₽</strong>
+                </div>
+            `;
+        }
+        
+        function generateQuote() {
+            const total = document.getElementById('totalAmount').textContent;
+            alert(`Коммерческое предложение сформировано!\n\nИтого: ${total}\n\nМенеджер свяжется с вами для уточнения деталей.`);
+        }
+    </script>
+</body>
+</html>
